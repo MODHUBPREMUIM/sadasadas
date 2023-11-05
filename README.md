@@ -10,35 +10,31 @@ GameLoadGui.Text = 'Luxury Hub Auto Chest Free Scripts'
 -- Get player objects
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer.PlayerGui
 
--- Function to automatically select a team
-local function AutoSelectTeam(teamName)
-    local ChooseTeamGui = LocalPlayer.PlayerGui.Main.ChooseTeam
-    if ChooseTeamGui and ChooseTeamGui.Visible then
-        local TeamFrame = ChooseTeamGui.Container[teamName].Frame.ViewportFrame
-        if TeamFrame then
-            for _, event in ipairs({ "MouseButton1Click", "MouseButton1Down", "Activated" }) do
-                for _, connection in ipairs(getconnections(TeamFrame.TextButton[event])) do
-                    connection.Function()
-                end
+repeat
+    local ChooseTeam = PlayerGui:FindFirstChild("ChooseTeam", true)
+    local UIController = PlayerGui:FindFirstChild("UIController", true)
+
+    if UIController and ChooseTeam and ChooseTeam.Visible then
+        for _, func in pairs(getgc()) do
+            if type(func) == "function" and getfenv(func).script == UIController then
+                local constants = getconstants(func)
+                pcall(function()
+                    if constants[1] == "Pirates" and #constants == 1 then
+                        func(shared.Team or "Pirates")
+                    end
+                end)
             end
         end
     end
-end
 
--- Ensure the correct team is selected
+    wait(1)
+until LocalPlayer.Team
+
 repeat
-    task.wait()
-    if not LocalPlayer.Team and LocalPlayer.PlayerGui.Main.ChooseTeam.Visible then
-        pcall(function()
-            if Team == "Pirates" or Team == "Marines" then
-                AutoSelectTeam(Team)
-            else
-                AutoSelectTeam("Pirates") -- Default team
-            end
-        end)
-    end
-until LocalPlayer.Team and game:IsLoaded()
+    wait()
+until LocalPlayer.Character
 
 -- Function to teleport to a specified position
 local function teleport(CFrame)
